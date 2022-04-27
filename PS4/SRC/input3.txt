@@ -1,0 +1,9 @@
+-C
+6
+-A OR -B OR C
+-D OR -E OR B
+-F OR A
+-E OR A
+E
+D
+# TEST CASE 3 (HW6_PL_Q2, Not) => False

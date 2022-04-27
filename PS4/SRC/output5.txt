@@ -1,0 +1,91 @@
+10
+-L OR -M OR Q
+-P
+-B OR -L OR P
+-A OR -B OR -M OR P
+-A OR -B OR M OR -P
+-A OR -B OR M
+-L OR M
+L OR -P
+-B OR L
+-A OR L
+26
+-B OR -L OR Q
+-A OR -B OR -M OR Q
+-L OR -M
+-A OR -B OR -L OR P
+-L OR P
+-B OR -M OR P
+-A OR -M OR P
+-B OR M OR -P
+-B OR M
+-A OR -M OR -P OR Q
+-A OR -B OR L OR -M
+-A OR M OR -P
+-A OR -B OR P
+L
+-A OR M
+-A OR -B OR -L OR -P OR Q
+-A OR -B OR -L OR Q
+-L OR Q
+-M OR -P OR Q
+-B OR -M OR Q
+-A OR -M OR Q
+-B OR -L
+-A OR -B OR -M
+-A OR -B OR -L OR M
+-B OR P
+M OR -P
+41
+-A OR -B OR Q
+-B OR Q
+-A OR -L OR -M OR Q
+-M OR P
+-A OR -L OR P
+-A OR -B OR -L OR -M OR Q
+-B OR -L OR -P OR Q
+-A OR -B OR -L
+-A OR -B OR -P OR Q
+-A OR -M OR -P
+-A OR L OR -M
+-A OR -P OR Q
+-A OR -B OR -P
+-A OR -B
+-B OR L OR -M
+M
+-M OR Q
+-B OR -M
+-A OR P
+-A OR -L OR -P OR Q
+-A OR -L OR Q
+-L
+-A OR -M
+-A OR -L OR M
+P
+-A OR -B OR -L OR -P
+-M OR -P
+-L OR -P OR Q
+-B
+-B OR -L OR -M OR Q
+-A OR -B OR L OR -P
+-B OR -P OR Q
+-B OR -P
+-A OR Q
+-B OR -L OR -P
+-A OR -L OR -P
+-M
+-A OR -L
+-L OR -P
+-A OR -B OR -M OR -P OR Q
+Q
+9
+-A OR -L OR -M
+-A OR -B OR -L OR -M
+-B OR -L OR -M
+-A OR -P
+L OR -M
+-B OR L OR -P
+-B OR -M OR -P OR Q
+-A
+{}
+YES

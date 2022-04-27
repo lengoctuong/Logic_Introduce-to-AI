@@ -1,5 +1,7 @@
 KB = []
 alpha = []
+outputLstMi = []
+
 
 # Doc file input
 def Read_CNF(fileName):
@@ -15,6 +17,7 @@ def Read_CNF(fileName):
         else:
             temp = alpha[0][0].capitalize() + alpha[0][1:]
         alpha = [temp]
+        alpha = Sort_Clause(alpha)
         
         # Doc KB
         KB = []
@@ -30,12 +33,51 @@ def Read_CNF(fileName):
                     else:
                         clause.append(temp[j][0].capitalize() + temp[j][1:])
 
-            # Rut gon literals va them vao KB neu literals khac True
+            # Rut gon clause va sap xep lai cac literals trong clause va them vao KB neu clause khac True
             clause = Minimize_Clause(clause)
+            clause = Sort_Clause(clause)
             if (clause != ['1']):
                 KB.append(clause)
 
     return KB, alpha
+
+# Ghi file output
+def Write(fileName, outputLstMi, result):
+    with open(fileName, 'w') as f:
+        for lstM in outputLstMi:
+            f.write(str(len(lstM)) + '\n')
+            if (len(lstM) == 0):
+                break
+
+            for resolvent in lstM:
+                if (resolvent == '{}'):
+                    f.write('{}')
+                else:
+                    for i in range(len(resolvent)):
+                        if (i != len(resolvent) - 1):
+                            f.write(resolvent[i] + ' OR ')
+                        else:
+                            f.write(resolvent[i])
+                        
+                f.write('\n')
+
+        if (result):
+            f.write('YES')
+        else:
+            f.write('NO')
+
+# Sap xep lai cac literals trong clause theo thu tu bang chu cai
+def Sort_Clause(clause):
+    # Dao nguoc literals de dem dau phu dinh ra sau
+    for i in range(len(clause)):
+        clause[i] = clause[i][::-1]
+
+    # Sap xep cac literals, va dao nguoc lai dang ban dau
+    clause.sort()
+    for i in range(len(clause)):
+        clause[i] = clause[i][::-1]
+    
+    return clause
 
 # Rut gon literals
 def Minimize_Clause(clause):
@@ -144,130 +186,94 @@ def PL_Resolve(Ci, Cj):
                 for literal in Cj[j + 1:]:
                     resolvents.append(literal)
 
-                # Rut gon va tra ve clause hop giai cua Ci va Cj
-                return Minimize_Clause(resolvents)
+                # Rut gon, sap xep va tra ve tham so thu I la clause hop giai cua Ci va Cj, tra ve tham so thu II la co ton tai 2 literals phu dinh nhau
+                resolvents = Minimize_Clause(resolvents)
+                resolvents = Sort_Clause(resolvents)
+                return resolvents, True
     
-    # Neu khong co hai literals trong Ci va Cj phu dinh nhau thi lay ca hai clause Ci va Cj, rut gon clause ket qua ve tra ve
+    # Neu khong co hai literals trong Ci va Cj phu dinh nhau thi lay ca hai clause Ci va Cj; rut gon, sap xep clause ket qua
+    # Tra ve tham so thu I la clause ket qua, tra ve tham so thu II la khong ton tai 2 literals phu dinh nhau
     resolvents = Ci.copy()
     resolvents.extend(Cj)
-    return Minimize_Clause(resolvents)
+    resolvents = Minimize_Clause(resolvents)
+    resolvents = Sort_Clause(resolvents)
+    return resolvents, False
 
 # Ham tra ve KB suy ra alpha bang Propositional Logic - Resolution
-def PL_Resolution(KB, alpha):
+# Ham luu thong tin vao cau truc outputLstMi de ghi ra file output.txt
+# outputLstMi = [ LstM1, LstM2, ..., LstMn ]
+# Voi LstMi la tap hop cac resolvents duoc sinh ra trong vong lap thu i, len(LstMi) la tong so resolvents do
+def PL_Resolution(KB, alpha, outputLstMi):
     # Tao clauses tu KB va new chua cac clauses duoc suy luan ra
     clauses = KB.copy()
     new = []
-
+    
     # Phu dinh lai alpha va them vao clauses
     if (alpha[0][0] == '-'):
         clauses.append([alpha[0][1:]])
     else:
         clauses.append(['-' + alpha[0]])
-    
+        
     # Lap den khi gap hop giai rong hoac khong tao ra hop giai moi
     while 1:
         # Hai vong lap de lay nhung cap clause co the co trong clauses
         for i in range(len(clauses)):
             for j in range(i + 1, len(clauses)):
-                # Thu hien hop giai hai clause do
-                resolvents = PL_Resolve(clauses[i], clauses[j])
+                # Thuc hien hop giai hai clause clauses[i] va clauses[j]
+                resolvents, check = PL_Resolve(clauses[i], clauses[j])
+
+                # Neu hai clauses[i] va clauses[j] khong ton tai hai literals phu dinh nhau, thi tiep tuc tim cap hop giai khac
+                if (not check):
+                    continue
                 
-                # Neu hop giai rong thi KB suy ra alpha la True, neu hop giai ra clause khac True thi them clause do vao new
+                # Neu hop giai rong thi tao temp gom cac menh de trong clauses va cac resolvents moi trong new va {}
+                # Sau do them nhung resolvents moi (chua co trong KB, trong cung vong lap va trong cac vong lap truoc) vao outputLstMi (cac resolvents moi luon nam cuoi list)
+                # Tra ve KB suy ra alpha la True
                 if (resolvents == []):
+                    temp = clauses.copy()
+                    temp = Add_Clauses(temp, new)
+                    temp.append('{}')
+                    outputLstMi.append(temp[len(clauses):])
                     return True
+
+                # Neu hop giai ra clause khac True thi them clause do vao new
                 if (resolvents != ['1']):
                     new = Add_Clause(new, resolvents)
 
-        # Kiem tra new co la tap hop con cua clauses hay khong, neu co thi khong the tao hop giai moi, nen KB suy ra alpha la False
+        # Kiem tra new co la tap hop con cua clauses hay khong, neu co thi khong the tao hop giai moi
+        # Them vao mot LstMi rong va tra ve KB suy ra alpha la False
         if (Is_Subset(clauses, new)):
+            outputLstMi.append([])
             return False
 
-        # Neu van co hop giai moi thi them new vao clauses
+        # Tao oldClauses la clauses truoc khi add resolvents moi tu new
+        oldClauses = clauses.copy()
         clauses = Add_Clauses(clauses, new)
+        
+        # Neu clauses sau khi add resolvents dai hon oldClauses
+        # thi them nhung resolvents moi (chua co trong KB, trong cung vong lap va trong cac vong lap truoc) vao outputLstMi (cac resolvents moi luon nam cuoi list)
+        if (len(oldClauses) != len(clauses)):
+            outputLstMi.append(clauses[len(oldClauses):])
+
+
+# ============================== MAIN FUNCTION ==============================
+# Doc du lieu dau vao va luu trong cau truc du lieu thich hop
+KB, alpha = Read_CNF('input.txt')
+
+# Goi ham PL_Resolution de thuc thi giai thuat hop giai
+checkKBEntailsAlpha = PL_Resolution(KB, alpha, outputLstMi)
+
+# Ghi du lieu dau ra vao tap tin dau ra theo dinh dang hop le
+Write('output.txt', outputLstMi, checkKBEntailsAlpha)
+
+for i in range(2, 6):
+    KB = []
+    alpha = []
+    outputLstMi = []
+    
+    KB, alpha = Read_CNF('input' + str(i) + '.txt')
+    checkKBEntailsAlpha = PL_Resolution(KB, alpha, outputLstMi)
+    Write('output' + str(i) + '.txt', outputLstMi, checkKBEntailsAlpha)
 
 # xu li alpha la cau co nhieu symbol
-# xu li ghi file output.txt
-# xu li sap xep cac literals theo thu tu
 # viet report
-
-KB, alpha = Read_CNF('input.txt')
-print(KB)
-print(alpha)
-print(PL_Resolution(KB, alpha))
-# ====================================================================================================
-
-
-# ====================================================================================================
-# S =  [ ]  # Store clause set S in list form
-
-# """
-# Read the clauses in the clause set file and store them in the S list
-#     -Each clause is also stored as a list
-#     -Disjunctively split
-#     -For example: ~p v ~q v r The storage format is ['~p','~q','r']
-# """ 
-# def  readClauseSet ( filePath ) : 
-#     global S
-#     for line in  open ( filePath , mode =  'r' , encoding =  'utf-8' ) : 
-#         line = line. replace ( '' ,  '' ) . strip ( )
-#         line = line.Split ( 'v' ) 
-#         S . append (line )
-
-
-# """
-# -If it is positive text, return its negative text
-# -If it is negative text, return its positive text
-# """ 
-# def  opposite ( clause ) : 
-#     if  '~'  in clause : 
-#         return clause . replace ( '~' ,  '' ) 
-#     else : 
-#         return  '~'  + clause
-
-
-# """
-# Boil down
-# """ 
-# def resolution ( ) : 
-#     global S
-#     End =  False 
-#     while  True : 
-#         if End :  break
-#         father = S . POP ( ) 
-#         for i in father [ : ] : 
-#             if End :  break 
-#             for mother in S [ : ] : 
-#                 if End :  break 
-#                 j =  list ( filter (  lambda X : x ==opposite ( i ) , mother ) ) 
-#                 if j ==  [ ] : 
-#                     continue 
-#                 else : 
-#                     print ( '\nParent clause: '  +  ' v ' . join ( father )  +  ' and '  +  ' v ' . join ( mother ) ) 
-#                     father . remove ( i ) 
-#                     mother . remove ( j [ 0 ] )
-#                     if ( father ==  [ ]  and mother ==  [ ] ) : 
-#                         print ( 'Resolution: NIL' ) 
-#                         end =  True 
-#                     elif father ==  [ ] : 
-#                         print ( 'Resolution:'  +  ' v ' . join ( mother ) ) 
-#                     elif mother ==  [ ] : 
-#                         print ( 'Resolution:'  +  ' v ' . join ( mother) ) 
-#                     else : 
-#                         print ( 'Resolution:'  +  ' v ' . join ( father )  +  ' v '  +  ' v ' . join ( mother ) )
-                   
-
-# def  ui ( ) : 
-#     print ( '----' ) 
-#     print ( '-------- Propositional logic resolution reasoning system --------' ) 
-#     print ( '----' )
-
-
-# def  main ( ) : 
-#     readClauseSet ( 'input.txt' ) 
-#     ui ( ) 
-#     resolution ( )
-
-
-# if __name__ ==  ' __main__ ' : 
-#     main ( )
-# ====================================================================================================

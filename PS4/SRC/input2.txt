@@ -1,0 +1,7 @@
+-A
+4
+-B OR C
+-C OR A OR B
+-A OR C
+-C
+# TEST CASE 2 (Slides_PL_Resolution) => True

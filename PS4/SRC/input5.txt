@@ -1,0 +1,10 @@
+Q
+7
+-P OR Q
+-L OR -M OR P
+-B OR -L OR M
+-A OR -P OR L
+-A OR -B OR L
+A
+B
+# TEST CASE 5 (Slides_PL_FC) => True
