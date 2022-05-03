@@ -1,7 +1,9 @@
+# Danh sach cac bien toan cuc
 KB = []
 alpha = []
 outputLstMi = []
-
+# outputLstMi = [ LstM1, LstM2, ..., LstMn ]
+# Voi LstMi la tap hop cac resolvents duoc sinh ra trong vong lap thu i, len(LstMi) la tong so resolvents do
 
 # Doc file input
 def Read_CNF(fileName):
@@ -224,8 +226,6 @@ def PL_Resolve(Ci, Cj):
 
 # Ham tra ve KB suy ra alpha bang Propositional Logic - Resolution
 # Ham luu thong tin vao cau truc outputLstMi de ghi ra file output.txt
-# outputLstMi = [ LstM1, LstM2, ..., LstMn ]
-# Voi LstMi la tap hop cac resolvents duoc sinh ra trong vong lap thu i, len(LstMi) la tong so resolvents do
 def PL_Resolution(KB, alpha, outputLstMi):
     # Tao clauses tu KB va new chua cac clauses duoc suy luan ra
     clauses = KB.copy()
@@ -239,8 +239,6 @@ def PL_Resolution(KB, alpha, outputLstMi):
     notAlpha = Not_CNFClause(alpha)
     clauses = Add_Clauses(clauses, notAlpha)
 
-    print(notAlpha)
-    print(clauses)
     # Lap den khi gap hop giai rong hoac khong tao ra hop giai moi
     while 1:
         # Hai vong lap de lay nhung cap clause co the co trong clauses
@@ -293,7 +291,7 @@ checkKBEntailsAlpha = PL_Resolution(KB, alpha, outputLstMi)
 # Ghi du lieu dau ra vao tap tin dau ra theo dinh dang hop le
 Write('output.txt', outputLstMi, checkKBEntailsAlpha)
 
-
+# Thuc hien cac test case con lai, doc tu inputi.txt va ghi vao outputi.txt
 for i in range(2, 6):
     KB = []
     alpha = []
