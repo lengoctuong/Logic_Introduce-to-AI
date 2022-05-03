@@ -7,16 +7,20 @@ outputLstMi = []
 def Read_CNF(fileName):
     with open(fileName, 'r') as f:
         # Doc alpha va N
-        alpha = f.readline().split()
+        temp = f.readline().split()
         N = int(f.readline())
 
-        # Xu li viet hoa literal trong alpha
-        temp = ''
-        if (alpha[0][0] == '-'):
-            temp = alpha[0][0] + alpha[0][1:].capitalize()
-        else:
-            temp = alpha[0][0].capitalize() + alpha[0][1:]
-        alpha = [temp]
+        # Luu cac literals tu temp vao alpha va xu li viet hoa cac literals
+        alpha = []
+        for literal in temp:
+            if (literal != 'OR' and literal != 'Or' and literal != 'or'):
+                if (literal[0] == '-'):
+                    alpha.append(literal[0] + literal[1:].capitalize())
+                else:
+                    alpha.append(literal[0].capitalize() + literal[1:])
+
+        # Rut gon clause va sap xep lai cac literals trong clause        
+        alpha = Minimize_Clause(alpha)
         alpha = Sort_Clause(alpha)
         
         # Doc KB
@@ -103,6 +107,25 @@ def Minimize_Clause(clause):
         i = i + 1
 
     return clause
+
+# Phu dinh clause
+def Not_CNFClause(clause):
+    notClause = []
+
+    # Truong hop clause la True hoac False thi phu dinh lai
+    if (clause == ['1']):
+        return ['0']
+    if (clause == ['0']):
+        return ['1']
+
+    # Phu dinh tung literal trong clause
+    for literal in clause:
+        if (literal[0] == '-'):
+            notClause.append([literal[1:]])
+        else:
+            notClause.append(['-' + literal])
+
+    return notClause
 
 # Kiem tra hai tap hop chua clause set va subset, lieu subset co la con cua set khong
 def Is_Subset(set, subset):
@@ -208,12 +231,16 @@ def PL_Resolution(KB, alpha, outputLstMi):
     clauses = KB.copy()
     new = []
     
+    # Khi alpha bang True thi KB suy ra alpha la True
+    if (alpha == ['1']):
+        return True
+
     # Phu dinh lai alpha va them vao clauses
-    if (alpha[0][0] == '-'):
-        clauses.append([alpha[0][1:]])
-    else:
-        clauses.append(['-' + alpha[0]])
-        
+    notAlpha = Not_CNFClause(alpha)
+    clauses = Add_Clauses(clauses, notAlpha)
+
+    print(notAlpha)
+    print(clauses)
     # Lap den khi gap hop giai rong hoac khong tao ra hop giai moi
     while 1:
         # Hai vong lap de lay nhung cap clause co the co trong clauses
@@ -266,6 +293,7 @@ checkKBEntailsAlpha = PL_Resolution(KB, alpha, outputLstMi)
 # Ghi du lieu dau ra vao tap tin dau ra theo dinh dang hop le
 Write('output.txt', outputLstMi, checkKBEntailsAlpha)
 
+
 for i in range(2, 6):
     KB = []
     alpha = []
@@ -274,6 +302,3 @@ for i in range(2, 6):
     KB, alpha = Read_CNF('input' + str(i) + '.txt')
     checkKBEntailsAlpha = PL_Resolution(KB, alpha, outputLstMi)
     Write('output' + str(i) + '.txt', outputLstMi, checkKBEntailsAlpha)
-
-# xu li alpha la cau co nhieu symbol
-# viet report
